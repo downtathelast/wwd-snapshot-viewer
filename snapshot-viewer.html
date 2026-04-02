@@ -1,50 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <title>WWDead Snapshot Viewer</title>
 
-  <!-- Inject live WWDead CSS -->
-  <link rel="stylesheet" href="https://wwdead.com/classic/style.css">
-
-  <!-- Optional: favicon like the game -->
-  <link rel="icon" type="image/png" href="https://wwdead.com/classic/favicon.png">
+  <!-- Base URL for WWDead assets -->
+  <base href="https://wwdead.com/classic/">
 
   <style>
-    body {
-      padding: 10px;
-      background: #000; /* fallback if CSS fails */
-    }
-    #snapshot-container {
-      max-width: 1200px;
-      margin: auto;
-    }
+    body { background: #111; color: #eee; font-family: monospace; padding: 20px; }
+    #snapshot-container { border: 2px solid #666; padding: 10px; background: #000; }
+    #snapshot-container a { color: #f99; }
+    #error { color: red; }
   </style>
 </head>
 <body>
-  <div id="snapshot-container">
-    Loading snapshot...
-  </div>
+  <h1>WWDead Snapshot Viewer</h1>
+  <p>Snapshot will load below from URL hash.</p>
+  <div id="snapshot-container"></div>
+  <div id="error"></div>
 
   <script>
-    // Grab snapshot from URL hash
-    function loadSnapshotFromHash() {
-      const hash = decodeURIComponent(location.hash.slice(1));
-      if (!hash) {
-        document.getElementById('snapshot-container').innerHTML = '<p>No snapshot found in URL.</p>';
-        return;
+    (function() {
+      const container = document.getElementById('snapshot-container');
+      const errorDiv = document.getElementById('error');
+
+      function loadSnapshot() {
+        const hash = decodeURIComponent(window.location.hash.slice(1));
+        if (!hash) {
+          errorDiv.textContent = "No snapshot data found in URL hash.";
+          return;
+        }
+
+        try {
+          // Try to parse as Base64
+          const html = atob(hash);
+          container.innerHTML = html;
+        } catch(e) {
+          errorDiv.textContent = "Failed to decode snapshot: " + e.message;
+        }
       }
 
-      try {
-        const html = atob(hash); // decode base64
-        document.getElementById('snapshot-container').innerHTML = html;
-      } catch (e) {
-        document.getElementById('snapshot-container').innerHTML = '<p>Error loading snapshot.</p>';
-        console.error(e);
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', loadSnapshotFromHash);
+      loadSnapshot();
+    })();
   </script>
 </body>
 </html>
