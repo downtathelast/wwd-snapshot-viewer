@@ -1,24 +1,44 @@
+<!-- ud-snapshot-viewer.html -->
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>UD Snapshot Viewer</title>
+  <meta charset="UTF-8">
+  <title>UD Snapshot Viewer</title>
+  <link rel="stylesheet" href="https://wwdead.com/classic/style.css">
+  <link rel="icon" type="image/png" href="https://wwdead.com/classic/favicon.png">
+  <style>
+    body { margin:0; background:#000; }
+    #snapshotFrame { width:100%; height:100vh; border:none; }
+    #message { color:#f88; text-align:center; margin-top:50px; font-family: sans-serif; }
+  </style>
 </head>
 <body>
-<script>
-(function(){
-    const hash = location.hash.slice(1);
-    if(!hash) { document.body.innerHTML = '<p>No snapshot provided.</p>'; return; }
-    try {
+  <iframe id="snapshotFrame"></iframe>
+  <div id="message" style="display:none;">No snapshot found in URL</div>
+  <script>
+    function loadSnapshot() {
+      const hash = location.hash.slice(1);
+      if(!hash) {
+        document.getElementById('snapshotFrame').style.display = 'none';
+        document.getElementById('message').style.display = 'block';
+        return;
+      }
+
+      try {
         const html = decodeURIComponent(escape(atob(hash)));
-        document.open();
-        document.write(html);
-        document.close();
-    } catch(e) {
-        document.body.innerHTML = '<p>Failed to decode snapshot.</p>';
-        console.error(e);
+        const iframe = document.getElementById('snapshotFrame');
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+      } catch(e) {
+        document.getElementById('snapshotFrame').style.display = 'none';
+        document.getElementById('message').textContent = "Failed to load snapshot: " + e.message;
+        document.getElementById('message').style.display = 'block';
+      }
     }
-})();
-</script>
+
+    window.addEventListener('DOMContentLoaded', loadSnapshot);
+  </script>
 </body>
 </html>
