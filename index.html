@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WWDead Snapshot Viewer</title>
+  <link rel="stylesheet" href="https://wwdead.com/classic/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #111;
+      color: #ccc;
+      font-family: monospace, monospace;
+    }
+    #snapshot-container {
+      background: #222;
+      padding: 15px;
+      border-radius: 5px;
+      max-width: 1000px;
+      margin: auto;
+      overflow-x: auto;
+    }
+    #timestamp {
+      font-size: 14px;
+      color: #f99;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>WWDead Snapshot Viewer</h1>
+  <div id="timestamp"></div>
+  <div id="snapshot-container">Loading snapshot...</div>
+
+  <!-- LZString library for decompressing snapshot -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+  <script>
+    (function() {
+      function getHashParam() {
+        // Try both ?hash= and #hash=
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('hash')) return urlParams.get('hash');
+        if (window.location.hash) return window.location.hash.substring(1);
+        return null;
+      }
+
+      const hash = getHashParam();
+      const container = document.getElementById('snapshot-container');
+      const ts = document.getElementById('timestamp');
+
+      if (!hash) {
+        container.textContent = "❌ No snapshot hash found in URL.";
+        return;
+      }
+
+      try {
+        const snapshotHtml = LZString.decompressFromEncodedURIComponent(hash);
+        if (!snapshotHtml) throw new Error("Failed to decompress snapshot.");
+
+        // Optional: extract timestamp from the snapshot (if included in a <time> or custom comment)
+        const tsMatch = snapshotHtml.match(/<!-- snapshot-time:([^>]*)-->/);
+        if (tsMatch) ts.textContent = "Snapshot taken: " + tsMatch[1];
+
+        container.innerHTML = snapshotHtml;
+
+        // Reapply WWDead CSS links inside the snapshot if necessary
+        const cssLink = document.createElement('link');
+        cssLink.rel = 'stylesheet';
+        cssLink.href = 'https://wwdead.com/classic/style.css';
+        document.head.appendChild(cssLink);
+
+      } catch (e) {
+        container.textContent = "❌ Error loading snapshot: " + e.message;
+        console.error(e);
+      }
+    })();
+  </script>
+</body>
+</html>
